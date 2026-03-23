@@ -1,80 +1,1294 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staccato</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staccato — Mobiliário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F5F0E8;
+  --warm-white: #FAFAF7;
+  --sand: #D4C4A8;
+  --taupe: #A89880;
+  --charcoal: #2A2520;
+  --dark: #1A1510;
+  --accent: #8B6F47;
+  --light-text: #6B5D4F;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Jost',sans-serif; background:var(--warm-white); color:var(--charcoal); cursor:none; overflow-x:hidden; }
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f0e8;
-      color: #2a2520;
-    }
+/* CURSOR */
+.cursor { width:10px; height:10px; background:var(--charcoal); border-radius:50%; position:fixed; pointer-events:none; z-index:9999; transition:transform .15s ease,background .2s; transform:translate(-50%,-50%); }
+.cursor-ring { width:36px; height:36px; border:1px solid var(--charcoal); border-radius:50%; position:fixed; pointer-events:none; z-index:9998; transition:all .35s ease; transform:translate(-50%,-50%); opacity:.5; }
 
-    header {
-      padding: 40px;
-      text-align: center;
-      font-size: 28px;
-      letter-spacing: 2px;
-    }
+/* LOADER */
+#loader { position:fixed; inset:0; background:var(--cream); z-index:9000; display:flex; align-items:center; justify-content:center; flex-direction:column; transition:opacity .8s ease,visibility .8s ease; }
+#loader.hidden { opacity:0; visibility:hidden; }
+.loader-logo { position:relative; width:120px; height:80px; display:flex; align-items:center; justify-content:center; }
+.loader-T { font-family:'Cormorant Garamond',serif; font-size:72px; font-weight:300; color:var(--charcoal); line-height:1; animation:tMoveUp 2s cubic-bezier(.76,0,.24,1) forwards; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+.loader-dot { width:10px; height:10px; background:var(--accent); border-radius:50%; position:absolute; bottom:10px; left:50%; transform:translateX(-50%); animation:dotMoveDown 2s cubic-bezier(.76,0,.24,1) forwards; }
+@keyframes tMoveUp { 0%{transform:translate(-50%,-50%)} 40%{transform:translate(-50%,calc(-50% - 20px))} 100%{transform:translate(-50%,calc(-50% - 25px))} }
+@keyframes dotMoveDown { 0%{bottom:50%;transform:translateX(-50%) translateY(50%)} 40%{bottom:8px} 100%{bottom:5px} }
+.loader-brand { font-family:'Jost',sans-serif; font-weight:200; font-size:11px; letter-spacing:6px; text-transform:uppercase; color:var(--taupe); margin-top:20px; opacity:0; animation:fadeIn .6s ease 1.2s forwards; }
+@keyframes fadeIn { to{opacity:1} }
 
-    section {
-      padding: 80px 20px;
-      text-align: center;
-      border-top: 1px solid #ddd;
-    }
+/* PAGES */
+.page { display:none; min-height:100vh; }
+.page.active { display:block; }
 
-    h1 {
-      font-size: 32px;
-      margin-bottom: 20px;
-    }
+/* TOP BAR */
+#top-bar { position:fixed; top:0; left:0; right:0; height:36px; background:var(--charcoal); display:flex; align-items:center; justify-content:flex-end; padding:0 80px; z-index:800; gap:20px; }
+.lang-btn { font-family:'Jost',sans-serif; font-size:10px; font-weight:300; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.5); background:none; border:none; cursor:none; padding:4px 6px; transition:color .2s; }
+.lang-btn.active,.lang-btn:hover { color:#fff; }
+.lang-sep { color:rgba(255,255,255,.2); font-size:10px; }
 
-    p {
-      font-size: 16px;
-      max-width: 600px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
+/* TOP MENU */
+#top-menu { position:fixed; top:36px; left:0; right:0; height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 80px; z-index:700; transition:background .4s ease,backdrop-filter .4s; }
+#top-menu.scrolled { background:rgba(250,250,247,.95); backdrop-filter:blur(12px); border-bottom:1px solid rgba(168,152,128,.2); }
+#top-menu.solid { background:rgba(250,250,247,.97); backdrop-filter:blur(12px); border-bottom:1px solid rgba(168,152,128,.2); }
+.logo { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300; letter-spacing:3px; color:var(--warm-white); text-decoration:none; transition:color .4s; cursor:none; }
+#top-menu.scrolled .logo,#top-menu.solid .logo { color:var(--charcoal); }
+.nav-links { display:flex; gap:40px; list-style:none; }
+.nav-links a { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:2.5px; text-transform:uppercase; color:rgba(255,255,255,.8); text-decoration:none; position:relative; transition:color .3s; cursor:none; }
+#top-menu.scrolled .nav-links a,#top-menu.solid .nav-links a { color:var(--light-text); }
+.nav-links a.current-page { color:#fff; }
+#top-menu.scrolled .nav-links a.current-page,#top-menu.solid .nav-links a.current-page { color:var(--charcoal); }
+.nav-links a::after { content:''; position:absolute; bottom:-3px; left:0; right:100%; height:1px; background:var(--accent); transition:right .3s ease; }
+.nav-links a:hover::after,.nav-links a.current-page::after { right:0; }
+.nav-arch { display:flex; align-items:center; gap:6px; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.5); text-decoration:none; transition:color .3s; cursor:none; }
+#top-menu.scrolled .nav-arch,#top-menu.solid .nav-arch { color:var(--taupe); }
 
-    .bloco {
-      height: 300px;
-      background: linear-gradient(135deg, #ddd, #bbb);
-      margin: 40px auto;
-      max-width: 800px;
-    }
-  </style>
+/* SIDE MENU */
+#side-menu { position:fixed; left:0; top:100px; bottom:0; width:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:32px; z-index:700; }
+.side-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.7); text-decoration:none; transition:color .3s,transform .2s; cursor:none; }
+.side-icon:hover { color:#fff; transform:scale(1.1); }
+.side-icon svg { width:18px; height:18px; stroke-width:1.2; }
+#side-menu.dark .side-icon { color:var(--taupe); }
+#side-menu.dark .side-icon:hover { color:var(--charcoal); }
+
+/* MEGA MENU */
+.mega-dropdown { position:fixed; top:100px; left:60px; right:0; background:rgba(250,250,247,.98); backdrop-filter:blur(20px); border-top:1px solid rgba(168,152,128,.2); padding:48px 80px; z-index:600; display:none; grid-template-columns:repeat(4,1fr); gap:48px; }
+.mega-dropdown.open { display:grid; }
+.mega-col h3 { font-family:'Jost',sans-serif; font-size:10px; font-weight:400; letter-spacing:3px; text-transform:uppercase; color:var(--taupe); margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--sand); }
+.mega-col ul { list-style:none; }
+.mega-col ul li { margin-bottom:10px; }
+.mega-col ul li a { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:300; color:var(--charcoal); text-decoration:none; transition:color .2s; display:block; cursor:none; }
+.mega-col ul li a:hover { color:var(--accent); }
+
+/* SEARCH OVERLAY */
+#search-overlay { position:fixed; inset:0; background:rgba(250,250,247,.98); z-index:900; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; }
+#search-overlay.open { opacity:1; pointer-events:all; }
+.search-inner { width:600px; max-width:90vw; text-align:center; }
+.search-label { font-family:'Cormorant Garamond',serif; font-size:14px; font-weight:300; letter-spacing:4px; color:var(--taupe); text-transform:uppercase; margin-bottom:32px; display:block; }
+.search-input { width:100%; font-family:'Cormorant Garamond',serif; font-size:42px; font-weight:300; color:var(--charcoal); border:none; border-bottom:1px solid var(--sand); background:transparent; text-align:center; outline:none; padding-bottom:16px; cursor:none; }
+.search-input::placeholder { color:var(--sand); }
+.search-close { position:absolute; top:40px; right:80px; font-family:'Jost',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--taupe); background:none; border:none; cursor:none; transition:color .2s; }
+.search-close:hover { color:var(--charcoal); }
+
+/* REVEAL */
+.reveal { opacity:0; transform:translateY(40px); transition:opacity .8s ease,transform .8s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* SHARED SECTION STYLES */
+.section-label { font-family:'Jost',sans-serif; font-size:10px; font-weight:300; letter-spacing:5px; text-transform:uppercase; color:var(--taupe); }
+.section-title { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,4vw,52px); font-weight:300; color:var(--charcoal); line-height:1; }
+.divider { width:40px; height:1px; background:var(--sand); }
+
+/* ===================== HOME PAGE ===================== */
+#hero { height:100vh; position:relative; overflow:hidden; background:var(--dark); }
+.hero-bg { position:absolute; inset:0; background:linear-gradient(135deg,#1a1510 0%,#2d2218 40%,#3d2f20 100%); }
+.hero-visual { position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; }
+.hero-room { width:100%; height:85%; position:relative; background:linear-gradient(to bottom,#2a1f14 0%,#3d2e1e 40%,#4a3825 80%,#3a2c1a 100%); }
+.hero-room::after { content:''; position:absolute; bottom:0; left:0; right:0; height:40%; background:linear-gradient(to top,#5c4530,#4a3422); clip-path:polygon(0 30%,100% 0,100% 100%,0 100%); }
+.sofa-shape { position:absolute; bottom:35%; left:50%; transform:translateX(-50%); width:45%; height:120px; background:linear-gradient(to bottom,#8B7355,#6B5535); border-radius:8px 8px 0 0; }
+.sofa-shape::before { content:''; position:absolute; bottom:0; left:-8%; right:-8%; height:30px; background:#5a4428; border-radius:4px; }
+.sofa-cushions { position:absolute; top:10px; left:5%; right:5%; height:55px; display:flex; gap:8px; }
+.sofa-cushions span { flex:1; background:linear-gradient(135deg,#9B8365,#7B6345); border-radius:6px 6px 2px 2px; }
+.table-shape { position:absolute; bottom:28%; left:55%; width:12%; height:50px; }
+.table-top { height:8px; background:#4a3828; border-radius:2px; }
+.table-legs { display:flex; justify-content:space-between; padding:0 15%; }
+.table-legs span { width:3px; height:42px; background:#3a2c1c; display:block; }
+.hero-overlay { position:absolute; inset:0; background:linear-gradient(to right,rgba(26,21,16,.7) 0%,rgba(26,21,16,.2) 50%,rgba(26,21,16,.5) 100%); }
+.hero-content { position:absolute; bottom:15%; left:80px; z-index:2; }
+.hero-eyebrow { font-family:'Jost',sans-serif; font-size:10px; font-weight:300; letter-spacing:5px; text-transform:uppercase; color:var(--sand); margin-bottom:20px; opacity:0; transform:translateY(20px); animation:slideUp .8s ease 2s forwards; }
+.hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(52px,7vw,96px); font-weight:300; line-height:.9; color:var(--warm-white); opacity:0; transform:translateY(30px); animation:slideUp 1s ease 2.2s forwards; }
+.hero-title em { font-style:italic; color:var(--sand); }
+.hero-sub { font-family:'Jost',sans-serif; font-size:13px; font-weight:200; letter-spacing:3px; color:rgba(255,255,255,.5); margin-top:24px; opacity:0; animation:slideUp .8s ease 2.6s forwards; }
+@keyframes slideUp { to{opacity:1;transform:translateY(0)} }
+.hero-scroll { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; color:rgba(255,255,255,.4); font-size:9px; letter-spacing:3px; text-transform:uppercase; font-family:'Jost',sans-serif; font-weight:300; }
+.scroll-line { width:1px; height:50px; background:linear-gradient(to bottom,rgba(255,255,255,.4),transparent); animation:scrollAnim 2s ease infinite; }
+@keyframes scrollAnim { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 51%{transform:scaleY(1);transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
+
+/* Home sections */
+#categorias { padding:120px 80px; background:var(--warm-white); }
+.section-header { display:flex; align-items:baseline; gap:24px; margin-bottom:64px; }
+.cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+.cat-card { position:relative; overflow:hidden; aspect-ratio:3/4; cursor:none; background:var(--sand); }
+.cat-card-bg { position:absolute; inset:0; transition:transform .7s cubic-bezier(.25,.46,.45,.94); }
+.cat-card:hover .cat-card-bg { transform:scale(1.06); }
+.cat-interior .cat-card-bg { background:linear-gradient(160deg,#3d2e1e 0%,#5a4530 30%,#7a6040 60%,#9a8060 100%); }
+.cat-outdoor .cat-card-bg { background:linear-gradient(160deg,#1e2d1e 0%,#2d4030 30%,#4a6040 60%,#6a8055 100%); }
+.cat-varanda .cat-card-bg { background:linear-gradient(160deg,#1e252d 0%,#2a3545 30%,#3a4d5e 60%,#5a7080 100%); }
+.cat-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(26,21,16,.8) 0%,transparent 60%); }
+.cat-info { position:absolute; bottom:36px; left:32px; right:32px; }
+.cat-num { font-family:'Cormorant Garamond',serif; font-size:11px; font-weight:300; letter-spacing:3px; color:var(--sand); margin-bottom:10px; }
+.cat-name { font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:300; color:#fff; line-height:1; margin-bottom:12px; }
+.cat-desc { font-family:'Jost',sans-serif; font-size:11px; font-weight:200; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.5); }
+.cat-arrow { position:absolute; top:32px; right:32px; width:40px; height:40px; border:1px solid rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.5); transition:all .3s; }
+.cat-card:hover .cat-arrow { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.5); color:#fff; }
+
+/* Inspire section */
+#inspire { position:relative; height:100vh; overflow:hidden; background:var(--dark); }
+.inspire-bg { position:absolute; inset:0; background:linear-gradient(135deg,#0d0a07 0%,#1e1710 30%,#2d2418 60%,#1a1208 100%); }
+.inspire-room { position:absolute; inset:0; }
+.inspire-floor { position:absolute; bottom:0; left:0; right:0; height:45%; background:linear-gradient(to top,#3a2c1a,#2a1e10); clip-path:polygon(0 20%,100% 0,100% 100%,0 100%); }
+.inspire-sofa { position:absolute; bottom:28%; left:15%; width:38%; height:100px; background:linear-gradient(to bottom,#7a6550,#5a4830); border-radius:6px 6px 0 0; }
+.inspire-sofa::before { content:''; position:absolute; bottom:0; left:-3%; right:-3%; height:22px; background:#483825; border-radius:3px; }
+.inspire-chair { position:absolute; bottom:28%; right:22%; width:12%; height:75px; background:linear-gradient(to bottom,#8a7060,#6a5040); border-radius:4px; }
+.inspire-overlay { position:absolute; inset:0; background:rgba(10,8,5,.4); }
+.inspire-header { position:absolute; top:15%; left:80px; z-index:2; }
+.hotspot { position:absolute; z-index:3; cursor:none; }
+.hotspot-dot { width:16px; height:16px; border:1.5px solid rgba(255,255,255,.8); border-radius:50%; position:relative; transition:transform .3s; }
+.hotspot-dot::before { content:''; position:absolute; inset:3px; background:#fff; border-radius:50%; }
+.hotspot-dot::after { content:''; position:absolute; inset:-8px; border:1px solid rgba(255,255,255,.2); border-radius:50%; animation:pulse 2.5s ease infinite; }
+@keyframes pulse { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(2);opacity:0} }
+.hotspot:hover .hotspot-dot { transform:scale(1.3); }
+.hotspot-popup { position:absolute; bottom:30px; left:20px; width:220px; background:rgba(250,250,247,.97); padding:20px; opacity:0; pointer-events:none; transform:translateY(8px); transition:all .3s ease; border-left:2px solid var(--accent); }
+.hotspot:hover .hotspot-popup { opacity:1; pointer-events:all; transform:translateY(0); }
+.popup-img { width:100%; height:80px; background:var(--sand); margin-bottom:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.popup-sofa-mini { width:80%; height:40px; background:linear-gradient(to bottom,#8a7560,#6a5540); border-radius:4px 4px 0 0; }
+.popup-name { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:400; color:var(--charcoal); margin-bottom:4px; }
+.popup-year { font-family:'Jost',sans-serif; font-size:10px; font-weight:300; letter-spacing:2px; color:var(--taupe); margin-bottom:10px; }
+.popup-desc { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; color:var(--light-text); line-height:1.6; margin-bottom:14px; }
+.popup-link { font-family:'Jost',sans-serif; font-size:10px; font-weight:400; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:8px; cursor:none; }
+.popup-link::after { content:'→'; transition:transform .2s; }
+.popup-link:hover::after { transform:translateX(4px); }
+
+/* Catalog section */
+#catalogo { padding:120px 80px; background:var(--cream); display:flex; align-items:center; gap:80px; }
+.catalog-info { flex:1; }
+.catalog-book { flex:1.2; position:relative; }
+.book-container { position:relative; width:100%; aspect-ratio:4/3; perspective:1200px; }
+.book { width:100%; height:100%; position:relative; transform-style:preserve-3d; transform:rotateY(-15deg) rotateX(5deg); transition:transform .5s ease; }
+.book:hover { transform:rotateY(-8deg) rotateX(3deg); }
+.book-cover { position:absolute; inset:0; background:linear-gradient(135deg,#3d2e1e,#5a4530); border-radius:2px 8px 8px 2px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; box-shadow:20px 20px 60px rgba(0,0,0,.3); }
+.book-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300; color:var(--sand); letter-spacing:4px; text-align:center; margin-bottom:12px; }
+.book-year { font-family:'Jost',sans-serif; font-size:10px; font-weight:200; letter-spacing:4px; color:rgba(212,196,168,.5); text-transform:uppercase; }
+.book-deco { width:40px; height:1px; background:var(--sand); margin:20px auto; opacity:.4; }
+.book-spine { position:absolute; left:-18px; top:2%; bottom:2%; width:18px; background:linear-gradient(to right,#2a1e10,#3d2e1e); border-radius:2px 0 0 2px; box-shadow:-4px 4px 20px rgba(0,0,0,.3); }
+.book-pages { position:absolute; right:-6px; top:2%; bottom:2%; width:10px; background:linear-gradient(to left,#f0ebe0,#e0d8c8,#f0ebe0); border-radius:0 2px 2px 0; }
+.book-nav { display:flex; gap:12px; margin-top:24px; }
+.book-btn { width:44px; height:44px; border:1px solid var(--sand); border-radius:50%; display:flex; align-items:center; justify-content:center; background:none; cursor:none; color:var(--taupe); transition:all .3s; }
+.book-btn:hover { background:var(--charcoal); border-color:var(--charcoal); color:#fff; }
+.catalog-cta { display:inline-flex; align-items:center; gap:16px; margin-top:40px; font-family:'Jost',sans-serif; font-size:11px; font-weight:400; letter-spacing:3px; text-transform:uppercase; color:var(--charcoal); text-decoration:none; padding-bottom:4px; border-bottom:1px solid var(--charcoal); transition:gap .3s; cursor:none; }
+.catalog-cta:hover { gap:24px; }
+
+/* Social section */
+#social { padding:100px 80px; background:var(--warm-white); }
+.social-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:48px; }
+.social-handle { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:3px; color:var(--taupe); display:flex; align-items:center; gap:10px; text-decoration:none; transition:color .3s; cursor:none; }
+.social-handle:hover { color:var(--charcoal); }
+.social-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; height:520px; }
+.social-item { position:relative; overflow:hidden; cursor:none; }
+.social-item:first-child { grid-row:1/3; }
+.social-bg { position:absolute; inset:0; transition:transform .6s ease; }
+.social-item:hover .social-bg { transform:scale(1.05); }
+.s1{background:linear-gradient(135deg,#3d2e22,#6a5035,#8a7055)} .s2{background:linear-gradient(135deg,#f0ebe0,#ddd0b8,#c8b890)} .s3{background:linear-gradient(135deg,#1a1a18,#2d2d28,#3d3d35)} .s4{background:linear-gradient(135deg,#4a3525,#6a5035,#8a7055)} .s5{background:linear-gradient(135deg,#2a3020,#3a4530,#506040)} .s6{background:linear-gradient(135deg,#f5f0e5,#ece0c8,#d8c8a8)} .s7{background:linear-gradient(135deg,#1e1a15,#302820,#482e1c)}
+.social-overlay { position:absolute; inset:0; background:rgba(0,0,0,0); transition:background .3s; display:flex; align-items:center; justify-content:center; }
+.social-item:hover .social-overlay { background:rgba(0,0,0,.25); }
+.social-icon { color:#fff; opacity:0; transition:opacity .3s; }
+.social-item:hover .social-icon { opacity:1; }
+
+/* Footer */
+footer { background:var(--charcoal); padding:80px 80px 40px; color:rgba(255,255,255,.6); }
+.footer-top { display:grid; grid-template-columns:2fr 1fr 1fr 1.5fr; gap:60px; padding-bottom:60px; border-bottom:1px solid rgba(255,255,255,.1); }
+.footer-logo { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; letter-spacing:4px; color:#fff; margin-bottom:20px; }
+.footer-tagline { font-family:'Jost',sans-serif; font-size:12px; font-weight:200; letter-spacing:1px; line-height:1.8; color:rgba(255,255,255,.4); max-width:280px; }
+.footer-col h4 { font-family:'Jost',sans-serif; font-size:10px; font-weight:400; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.3); margin-bottom:24px; }
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:12px; }
+.footer-col ul li a { font-family:'Jost',sans-serif; font-size:13px; font-weight:300; color:rgba(255,255,255,.55); text-decoration:none; transition:color .2s; cursor:none; }
+.footer-col ul li a:hover { color:#fff; }
+.footer-contact-item { display:flex; flex-direction:column; gap:4px; margin-bottom:20px; }
+.contact-label { font-family:'Jost',sans-serif; font-size:9px; font-weight:300; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.25); }
+.contact-value { font-family:'Jost',sans-serif; font-size:13px; font-weight:300; color:rgba(255,255,255,.6); text-decoration:none; }
+.footer-bottom { padding-top:32px; display:flex; justify-content:space-between; align-items:center; }
+.footer-copy { font-family:'Jost',sans-serif; font-size:11px; font-weight:200; letter-spacing:1px; color:rgba(255,255,255,.2); }
+.footer-socials { display:flex; gap:20px; }
+.footer-social-link { color:rgba(255,255,255,.3); transition:color .2s; text-decoration:none; font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:none; }
+.footer-social-link:hover { color:rgba(255,255,255,.8); }
+
+/* ===================== PRODUTOS PAGE ===================== */
+.page-hero { padding-top:100px; height:320px; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding-left:80px; padding-bottom:48px; }
+.page-hero-bg { position:absolute; inset:0; }
+.page-hero-overlay { position:absolute; inset:0; background:linear-gradient(to right,rgba(26,21,16,.7),rgba(26,21,16,.2)); }
+.produtos-hero-bg { background:linear-gradient(135deg,#1a1510,#3d2e1e,#5a4030); }
+.colecao-hero-bg { background:linear-gradient(135deg,#0d1a0d,#1e3020,#2d4530); }
+.sobre-hero-bg { background:linear-gradient(135deg,#1a1510,#2a2018,#3a3025); }
+.materiais-hero-bg { background:linear-gradient(135deg,#15181a,#202830,#2a3840); }
+.page-hero-content { position:relative; z-index:1; }
+.page-breadcrumb { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:12px; }
+.page-hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(48px,6vw,80px); font-weight:300; color:var(--warm-white); line-height:1; }
+
+/* Product filters */
+.produtos-filters { padding:32px 80px; background:var(--warm-white); border-bottom:1px solid rgba(168,152,128,.15); display:flex; align-items:center; gap:48px; position:sticky; top:100px; z-index:500; }
+.filter-group { display:flex; gap:8px; align-items:center; }
+.filter-label { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--taupe); margin-right:8px; }
+.filter-btn { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:1px; color:var(--light-text); background:none; border:1px solid transparent; padding:6px 16px; cursor:none; transition:all .2s; border-radius:0; }
+.filter-btn:hover,.filter-btn.active { border-color:var(--charcoal); color:var(--charcoal); }
+.filter-divider { width:1px; height:20px; background:var(--sand); }
+
+/* Products grid */
+.produtos-grid { padding:60px 80px 120px; }
+.products-row-sofa { display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-bottom:3px; }
+.product-sofa-card { position:relative; overflow:hidden; cursor:none; }
+.product-sofa-env { aspect-ratio:16/9; position:relative; overflow:hidden; }
+.product-sofa-white { aspect-ratio:16/9; position:relative; overflow:hidden; background:var(--cream); display:flex; align-items:center; justify-content:center; }
+.products-row-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; margin-bottom:3px; }
+.product-card-3 { position:relative; overflow:hidden; cursor:none; aspect-ratio:3/4; background:var(--cream); display:flex; align-items:center; justify-content:center; }
+.product-bg { position:absolute; inset:0; transition:transform .6s ease; }
+.product-card-3:hover .product-bg,.product-sofa-card:hover .product-bg { transform:scale(1.04); }
+.product-info-bar { position:absolute; bottom:0; left:0; right:0; padding:20px 24px; background:linear-gradient(to top,rgba(26,21,16,.7),transparent); }
+.product-card-name { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:300; color:#fff; }
+.product-card-cat { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.5); margin-top:4px; }
+.product-sofa-white .sofa-illustration { width:60%; }
+.sofa-3d { width:100%; height:80px; background:linear-gradient(to bottom,#8a7560,#6a5540); border-radius:6px 6px 0 0; position:relative; }
+.sofa-3d::before { content:''; position:absolute; bottom:0; left:-5%; right:-5%; height:18px; background:#5a4530; border-radius:3px; }
+.chair-3d { width:70%; height:100px; position:relative; }
+.chair-seat { width:100%; height:50px; background:linear-gradient(to bottom,#9a8060,#7a6040); border-radius:4px; }
+.chair-back { width:80%; height:60px; background:linear-gradient(to bottom,#8a7050,#6a5030); border-radius:4px 4px 0 0; margin:0 auto; margin-bottom:-2px; }
+.table-3d { width:80%; }
+.table-3d-top { height:10px; background:#5a4535; border-radius:2px; }
+.table-3d-legs { display:flex; justify-content:space-between; padding:0 10%; }
+.table-3d-legs span { width:3px; height:60px; background:#4a3525; display:block; }
+
+/* Env backgrounds */
+.env-sala { background:linear-gradient(160deg,#2a1e14,#4a3828,#6a5840); }
+.env-externa { background:linear-gradient(160deg,#1a2a1a,#2a4030,#3a5840); }
+.env-varanda { background:linear-gradient(160deg,#1a1e2a,#2a3040,#3a4858); }
+.env-natural { background:linear-gradient(160deg,#2a2218,#3a3020,#5a4a30); }
+.env-dark { background:linear-gradient(160deg,#111,#1a1a1a,#252520); }
+.env-light { background:linear-gradient(160deg,#e8e0d0,#d8cfc0,#c8bfaa); }
+
+/* ===================== PRODUTO INTERNO ===================== */
+.produto-banner { height:85vh; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.produto-banner-bg { position:absolute; inset:0; }
+.produto-banner-overlay { position:absolute; inset:0; background:rgba(10,8,5,.45); }
+.produto-banner-content { position:relative; z-index:2; text-align:center; }
+.produto-banner-name { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,9vw,120px); font-weight:300; color:#fff; letter-spacing:8px; line-height:1; }
+.produto-banner-year { font-family:'Jost',sans-serif; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:rgba(255,255,255,.4); margin-top:16px; }
+
+/* Carousel */
+.produto-carousel { background:var(--dark); padding:60px 0; }
+.carousel-track { display:flex; gap:3px; overflow-x:auto; scroll-snap-type:x mandatory; padding:0 80px; scrollbar-width:none; }
+.carousel-track::-webkit-scrollbar { display:none; }
+.carousel-slide { flex:0 0 70%; scroll-snap-align:start; aspect-ratio:16/9; position:relative; overflow:hidden; }
+.carousel-slide-bg { position:absolute; inset:0; }
+.carousel-nav { display:flex; justify-content:center; gap:6px; padding:24px; }
+.carousel-dot { width:6px; height:6px; background:rgba(255,255,255,.2); border-radius:50%; cursor:none; transition:background .2s; }
+.carousel-dot.active { background:rgba(255,255,255,.7); }
+
+/* Product detail */
+.produto-detail { padding:100px 80px; display:grid; grid-template-columns:1fr 1.2fr; gap:80px; align-items:start; background:var(--warm-white); }
+.produto-detail-info { position:sticky; top:120px; }
+.produto-detail-title { font-family:'Cormorant Garamond',serif; font-size:52px; font-weight:300; color:var(--charcoal); margin-bottom:8px; }
+.produto-detail-year { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--taupe); margin-bottom:32px; }
+.produto-detail-desc { font-family:'Jost',sans-serif; font-size:14px; font-weight:300; line-height:1.9; color:var(--light-text); margin-bottom:40px; }
+.produto-specs { border-top:1px solid var(--sand); padding-top:32px; }
+.spec-row { display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(212,196,168,.4); }
+.spec-key { font-family:'Jost',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--taupe); }
+.spec-val { font-family:'Jost',sans-serif; font-size:13px; font-weight:300; color:var(--charcoal); }
+.produto-download { margin-top:36px; display:flex; align-items:center; gap:16px; padding:18px 24px; border:1px solid var(--sand); transition:all .3s; cursor:none; }
+.produto-download:hover { border-color:var(--charcoal); background:var(--charcoal); color:#fff; }
+.produto-download:hover .dl-text,.produto-download:hover .dl-label { color:#fff; }
+.dl-icon { width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--taupe); }
+.dl-text { font-family:'Jost',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--charcoal); }
+.dl-label { font-family:'Jost',sans-serif; font-size:11px; font-weight:200; color:var(--taupe); }
+.produto-angles { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
+.angle-img { aspect-ratio:1; background:var(--cream); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.angle-label { position:absolute; bottom:12px; left:16px; font-family:'Jost',sans-serif; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--taupe); }
+
+/* Complementares */
+.complementares { padding:80px 80px; background:var(--cream); }
+.comp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; margin-top:48px; }
+.comp-card { aspect-ratio:1; background:var(--warm-white); position:relative; overflow:hidden; cursor:none; display:flex; align-items:center; justify-content:center; }
+.comp-card-bg { position:absolute; inset:0; transition:transform .5s ease; }
+.comp-card:hover .comp-card-bg { transform:scale(1.05); }
+.comp-card-label { position:absolute; bottom:20px; left:20px; }
+.comp-card-name { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; color:var(--charcoal); }
+.comp-card-type { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--taupe); margin-top:4px; }
+
+/* Designer section */
+.designer-section { padding:80px 80px; background:var(--charcoal); display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+.designer-photo { aspect-ratio:3/4; background:linear-gradient(160deg,#3a2e22,#2a1e14); position:relative; overflow:hidden; }
+.designer-photo-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,rgba(26,21,16,.6)); }
+.designer-info { }
+.designer-label { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--taupe); margin-bottom:20px; }
+.designer-name { font-family:'Cormorant Garamond',serif; font-size:48px; font-weight:300; color:#fff; line-height:1; margin-bottom:24px; }
+.designer-bio { font-family:'Jost',sans-serif; font-size:14px; font-weight:200; line-height:1.9; color:rgba(255,255,255,.5); }
+
+/* Arranjos (sofa modular) */
+.arranjos-section { padding:80px 80px; background:var(--warm-white); }
+.arranjos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:48px; }
+.arranjo-card { background:var(--cream); padding:32px; cursor:none; border:1px solid transparent; transition:border-color .3s; }
+.arranjo-card:hover { border-color:var(--sand); }
+.arranjo-visual { height:120px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:20px; }
+.arranjo-sofa { height:50px; background:linear-gradient(to bottom,#9a8565,#7a6545); border-radius:4px 4px 0 0; position:relative; }
+.arranjo-sofa::before { content:''; position:absolute; bottom:0; left:-5%; right:-5%; height:12px; background:#6a5535; border-radius:2px; }
+.arranjo-name { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; color:var(--charcoal); margin-bottom:6px; }
+.arranjo-modules { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--taupe); }
+
+/* ===================== COLEÇÃO PAGE ===================== */
+.colecao-intro { padding:80px 80px; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+.colecao-grid { }
+.colecao-item { position:relative; height:100vh; overflow:hidden; display:flex; align-items:center; justify-content:flex-end; padding-right:80px; }
+.colecao-item-bg { position:absolute; inset:0; }
+.colecao-item-overlay { position:absolute; inset:0; background:linear-gradient(to left,rgba(10,8,5,.7),rgba(10,8,5,.1)); }
+.colecao-item-content { position:relative; z-index:2; text-align:right; max-width:380px; }
+.colecao-item-num { font-family:'Cormorant Garamond',serif; font-size:120px; font-weight:300; color:rgba(255,255,255,.06); line-height:1; margin-bottom:-20px; }
+.colecao-item-name { font-family:'Cormorant Garamond',serif; font-size:clamp(42px,5vw,64px); font-weight:300; color:#fff; line-height:1; margin-bottom:16px; }
+.colecao-item-desc { font-family:'Jost',sans-serif; font-size:13px; font-weight:200; letter-spacing:1px; line-height:1.8; color:rgba(255,255,255,.55); margin-bottom:32px; }
+.colecao-cta { display:inline-flex; align-items:center; gap:14px; font-family:'Jost',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#fff; text-decoration:none; padding-bottom:4px; border-bottom:1px solid rgba(255,255,255,.4); transition:gap .3s,border-color .3s; cursor:none; }
+.colecao-cta:hover { gap:22px; border-color:#fff; }
+.colecao-hotspots { position:absolute; inset:0; z-index:3; }
+
+/* ===================== SOBRE PAGE ===================== */
+.sobre-intro { padding:100px 80px; display:grid; grid-template-columns:1fr 1fr; gap:100px; align-items:center; }
+.sobre-text-block { }
+.sobre-big-quote { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,4vw,48px); font-weight:300; font-style:italic; line-height:1.3; color:var(--charcoal); margin-bottom:40px; border-left:2px solid var(--accent); padding-left:32px; }
+.sobre-body { font-family:'Jost',sans-serif; font-size:14px; font-weight:300; line-height:1.9; color:var(--light-text); }
+.sobre-visual { position:relative; }
+.sobre-img-main { width:100%; aspect-ratio:3/4; background:linear-gradient(160deg,#3d2e1e,#5a4530,#7a6040); position:relative; }
+.sobre-img-float { position:absolute; bottom:-40px; left:-40px; width:55%; aspect-ratio:1; background:linear-gradient(160deg,#2a2018,#3a3025,#5a4a35); border:8px solid var(--warm-white); }
+.sobre-stats { padding:80px 80px; background:var(--cream); display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
+.stat-block { padding:48px 40px; background:var(--warm-white); text-align:center; }
+.stat-num { font-family:'Cormorant Garamond',serif; font-size:64px; font-weight:300; color:var(--charcoal); line-height:1; }
+.stat-unit { font-family:'Cormorant Garamond',serif; font-size:32px; color:var(--accent); }
+.stat-label { font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--taupe); margin-top:12px; }
+.fabrica-section { padding:100px 80px; background:var(--warm-white); }
+.fabrica-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:80px; align-items:center; margin-top:64px; }
+.fabrica-text h3 { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--charcoal); margin-bottom:24px; }
+.fabrica-text p { font-family:'Jost',sans-serif; font-size:14px; font-weight:300; line-height:1.9; color:var(--light-text); }
+.fabrica-img { aspect-ratio:4/3; background:linear-gradient(160deg,#1a1510,#2a2018,#3a2e20); position:relative; }
+.designers-section { padding:80px 80px; background:var(--cream); }
+.designers-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; margin-top:56px; }
+.designer-card { background:var(--warm-white); overflow:hidden; cursor:none; }
+.designer-card-img { aspect-ratio:1; background:var(--sand); position:relative; overflow:hidden; }
+.designer-card-body { padding:24px; }
+.designer-card-name { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:300; color:var(--charcoal); margin-bottom:4px; }
+.designer-card-role { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--taupe); }
+
+/* ===================== MATERIAIS PAGE ===================== */
+.materiais-tabs { padding:40px 80px; background:var(--warm-white); border-bottom:1px solid rgba(168,152,128,.15); display:flex; gap:0; position:sticky; top:100px; z-index:500; }
+.mat-tab { font-family:'Jost',sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--taupe); background:none; border:none; padding:14px 28px; cursor:none; transition:all .2s; border-bottom:2px solid transparent; }
+.mat-tab:hover { color:var(--charcoal); }
+.mat-tab.active { color:var(--charcoal); border-bottom-color:var(--charcoal); }
+.materiais-section { padding:80px 80px; }
+.mat-category { margin-bottom:80px; }
+.mat-category-header { display:flex; align-items:baseline; gap:20px; margin-bottom:40px; }
+.mat-category-title { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--charcoal); }
+.mat-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:2px; }
+.mat-card { cursor:none; background:var(--cream); position:relative; overflow:hidden; }
+.mat-swatch { aspect-ratio:1; transition:transform .4s ease; }
+.mat-card:hover .mat-swatch { transform:scale(1.05); }
+.mat-card-info { padding:14px 16px; }
+.mat-card-code { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--taupe); margin-bottom:4px; }
+.mat-card-name { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:300; color:var(--charcoal); }
+/* Swatch colors */
+.sw-areia { background:#C8B890; } .sw-pedra { background:#8A8070; } .sw-grafite { background:#3A3830; } .sw-marfim { background:#EDE0C8; } .sw-caramelo { background:#C07840; }
+.sw-verde { background:#4A6040; } .sw-azul { background:#3A5070; } .sw-terracota { background:#9A4830; } .sw-musgo { background:#5A6040; } .sw-bege { background:#D0C0A0; }
+.sw-natural { background:#D8C090; } .sw-teca { background:#8A6030; } .sw-eucalipto { background:#5A7040; } .sw-freijo { background:#6A4828; } .sw-cedro { background:#5A3820; }
+.sw-branco { background:#F0EDE8; border:1px solid #D0C8B8; } .sw-preto { background:#1A1818; } .sw-bronze { background:#7A5830; } .sw-cobre { background:#A06030; } .sw-titanio { background:#6A6868; }
+.cuidados-section { padding:80px 80px; background:var(--cream); }
+.cuidados-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:48px; }
+.cuidado-card { background:var(--warm-white); padding:36px; }
+.cuidado-icon { width:48px; height:48px; display:flex; align-items:center; justify-content:center; margin-bottom:24px; color:var(--taupe); }
+.cuidado-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:300; color:var(--charcoal); margin-bottom:12px; }
+.cuidado-text { font-family:'Jost',sans-serif; font-size:13px; font-weight:300; line-height:1.8; color:var(--light-text); }
+.garantia-banner { margin:0 80px 80px; padding:48px 64px; background:var(--charcoal); display:flex; align-items:center; justify-content:space-between; }
+.garantia-text { }
+.garantia-title { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:300; color:#fff; margin-bottom:8px; }
+.garantia-sub { font-family:'Jost',sans-serif; font-size:13px; font-weight:200; color:rgba(255,255,255,.5); }
+.garantia-btn { font-family:'Jost',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--charcoal); background:var(--sand); border:none; padding:16px 32px; cursor:none; transition:background .2s; white-space:nowrap; }
+.garantia-btn:hover { background:#fff; }
+
+/* ===================== BACK BUTTON ===================== */
+.btn-primary { display:inline-flex; align-items:center; gap:12px; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--charcoal); background:none; border:1px solid var(--charcoal); padding:14px 28px; cursor:none; transition:all .3s; text-decoration:none; }
+.btn-primary:hover { background:var(--charcoal); color:#fff; }
+.btn-ghost { display:inline-flex; align-items:center; gap:12px; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--taupe); background:none; border:none; padding:0; cursor:none; transition:color .2s; }
+.btn-ghost:hover { color:var(--charcoal); }
+</style>
 </head>
-
 <body>
 
-<header>
-  STACCATO
-</header>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 
-<section>
-  <h1>Forma que persiste</h1>
-  <p>
-    Design autoral com foco em proporção, conforto e permanência.
-  </p>
-  <div class="bloco"></div>
-</section>
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">
+    <div class="loader-T">T</div>
+    <div class="loader-dot"></div>
+  </div>
+  <div class="loader-brand">Staccato</div>
+</div>
 
-<section>
-  <h1>Coleções</h1>
-  <p>
-    Essenza · Terra · Branch
-  </p>
-  <div class="bloco"></div>
-</section>
+<!-- SEARCH OVERLAY -->
+<div id="search-overlay">
+  <button class="search-close" onclick="toggleSearch()">Fechar ✕</button>
+  <div class="search-inner">
+    <span class="search-label">O que você procura?</span>
+    <input class="search-input" type="text" placeholder="Sofás, poltronas, mesas...">
+  </div>
+</div>
 
-<section>
-  <h1>Arquitetos & Parceiros</h1>
-  <p>
-    Materiais técnicos, suporte de projeto e rede de representantes.
-  </p>
-</section>
+<!-- TOP BAR -->
+<div id="top-bar">
+  <button class="lang-btn active" onclick="setLang(this)">PT</button>
+  <span class="lang-sep">|</span>
+  <button class="lang-btn" onclick="setLang(this)">EN</button>
+  <span class="lang-sep">|</span>
+  <button class="lang-btn" onclick="setLang(this)">ES</button>
+</div>
 
+<!-- TOP MENU -->
+<nav id="top-menu">
+  <a href="#" class="logo" onclick="showPage('home');return false;">Staccato</a>
+  <ul class="nav-links">
+    <li><a href="#" id="nav-produtos" onmouseenter="openMega()" onmouseleave="closeMegaDelay()" onclick="showPage('produtos');return false;">Produtos</a></li>
+    <li><a href="#" id="nav-colecao" onclick="showPage('colecao');return false;">Coleção</a></li>
+    <li><a href="#" id="nav-sobre" onclick="showPage('sobre');return false;">Sobre</a></li>
+    <li><a href="#" id="nav-materiais" onclick="showPage('materiais');return false;">Materiais</a></li>
+    <li><a href="#" onclick="return false;">Comunicações</a></li>
+    <li><a href="#" onclick="return false;">Vitrines</a></li>
+  </ul>
+  <a href="#" class="nav-arch">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="12" height="12"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    Recursos Arq & Design
+  </a>
+</nav>
+
+<!-- MEGA MENU -->
+<div class="mega-dropdown" id="megaMenu" onmouseenter="openMega()" onmouseleave="closeMegaDelay()">
+  <div class="mega-col">
+    <h3>Interior</h3>
+    <ul>
+      <li><a href="#" onclick="showPage('produto');return false;">Sofás</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Poltronas</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Otomanos</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Cadeiras de Jantar</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Chaise Longue</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Mesas</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Todos os produtos →</a></li>
+    </ul>
+  </div>
+  <div class="mega-col">
+    <h3>Ar Livre</h3>
+    <ul>
+      <li><a href="#" onclick="showPage('produtos');return false;">Sofás Externos</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Espreguiçadeiras</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Mesas Externas</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Poltronas Externas</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Todos os produtos →</a></li>
+    </ul>
+  </div>
+  <div class="mega-col">
+    <h3>Varanda</h3>
+    <ul>
+      <li><a href="#" onclick="showPage('produtos');return false;">Conjuntos</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Cadeiras</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Mesas Compactas</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Todos os produtos →</a></li>
+    </ul>
+  </div>
+  <div class="mega-col">
+    <h3>Navegar por Ambiente</h3>
+    <ul>
+      <li><a href="#" onclick="showPage('produtos');return false;">Vivendo</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Jantar</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Dormindo</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Área Externa</a></li>
+      <li><a href="#" onclick="showPage('produtos');return false;">Todas as configurações →</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- SIDE MENU -->
+<div id="side-menu">
+  <a href="#" class="side-icon" onclick="toggleSearch();return false;" title="Busca">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  </a>
+  <a href="#" class="side-icon" title="Onde encontrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+  </a>
+  <a href="#" class="side-icon" title="Contato">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+  </a>
+  <a href="#" class="side-icon" title="Instagram">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+  </a>
+</div>
+
+<!-- ========================= HOME PAGE ========================= -->
+<div id="page-home" class="page active">
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-visual">
+      <div class="hero-room">
+        <div class="sofa-shape"><div class="sofa-cushions"><span></span><span></span><span></span></div></div>
+        <div class="table-shape"><div class="table-top"></div><div class="table-legs"><span></span><span></span></div></div>
+      </div>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Coleção 2025</p>
+      <h1 class="hero-title">Forma<br><em>que persiste</em></h1>
+      <p class="hero-sub">Mobiliário de autor · Design brasileiro</p>
+    </div>
+    <div class="hero-scroll"><div class="scroll-line"></div><span>Rolar</span></div>
+  </section>
+
+  <section id="categorias">
+    <div class="section-header reveal">
+      <span class="section-label">01 — Produtos</span>
+      <h2 class="section-title">Escolha seu<br>ambiente</h2>
+    </div>
+    <div class="cat-grid reveal">
+      <div class="cat-card cat-interior" onclick="showPage('produtos')">
+        <div class="cat-card-bg"></div><div class="cat-overlay"></div>
+        <div class="cat-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div>
+        <div class="cat-info"><p class="cat-num">01</p><h3 class="cat-name">Interior</h3><p class="cat-desc">Sofás · Poltronas · Mesas</p></div>
+      </div>
+      <div class="cat-card cat-outdoor" onclick="showPage('produtos')">
+        <div class="cat-card-bg"></div><div class="cat-overlay"></div>
+        <div class="cat-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div>
+        <div class="cat-info"><p class="cat-num">02</p><h3 class="cat-name">Ar Livre</h3><p class="cat-desc">Externo · Jardim · Pool</p></div>
+      </div>
+      <div class="cat-card cat-varanda" onclick="showPage('produtos')">
+        <div class="cat-card-bg"></div><div class="cat-overlay"></div>
+        <div class="cat-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div>
+        <div class="cat-info"><p class="cat-num">03</p><h3 class="cat-name">Varanda</h3><p class="cat-desc">Compacto · Versátil</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="inspire">
+    <div class="inspire-bg"></div>
+    <div class="inspire-room">
+      <div class="inspire-floor"></div>
+      <div class="inspire-sofa"></div>
+      <div class="inspire-chair"></div>
+    </div>
+    <div class="inspire-overlay"></div>
+    <div class="inspire-header reveal">
+      <p class="section-label">02 — Inspire-se</p>
+      <h2 class="section-title" style="color:var(--warm-white)">Ambientes<br><em style="color:var(--sand)">que inspiram</em></h2>
+    </div>
+    <div class="hotspot" style="left:38%;bottom:36%;">
+      <div class="hotspot-dot"></div>
+      <div class="hotspot-popup">
+        <div class="popup-img"><div class="popup-sofa-mini"></div></div>
+        <p class="popup-name">Serra</p><p class="popup-year">2024</p>
+        <p class="popup-desc">Sofá modular em estrutura de madeira maciça e tecido de alto desempenho.</p>
+        <a href="#" class="popup-link" onclick="showPage('produto');return false;">Ver produto</a>
+      </div>
+    </div>
+    <div class="hotspot" style="right:24%;bottom:40%;">
+      <div class="hotspot-dot"></div>
+      <div class="hotspot-popup" style="left:auto;right:20px;">
+        <div class="popup-img" style="background:#6a5040;"></div>
+        <p class="popup-name">Brisa</p><p class="popup-year">2024</p>
+        <p class="popup-desc">Poltrona giratória com base em aço carbono e couro natural.</p>
+        <a href="#" class="popup-link" onclick="showPage('produto');return false;">Ver produto</a>
+      </div>
+    </div>
+    <div class="hotspot" style="left:50%;bottom:30%;">
+      <div class="hotspot-dot"></div>
+      <div class="hotspot-popup">
+        <div class="popup-img" style="background:#4a3828;"></div>
+        <p class="popup-name">Quadro</p><p class="popup-year">2023</p>
+        <p class="popup-desc">Mesa de centro em madeira tauarí e vidro temperado fumê.</p>
+        <a href="#" class="popup-link" onclick="showPage('produto');return false;">Ver produto</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="catalogo" class="reveal">
+    <div class="catalog-info">
+      <p class="section-label" style="margin-bottom:20px;">03 — Catálogo</p>
+      <h2 class="section-title" style="margin-bottom:32px;">O livro<br>da coleção</h2>
+      <div class="divider" style="margin-bottom:32px;"></div>
+      <p style="font-family:'Jost',sans-serif;font-size:14px;font-weight:300;line-height:1.9;color:var(--light-text);max-width:380px;">Explore nossa coleção completa em formato digital. Navegue por cada peça, descubra detalhes técnicos e inspire-se com os ambientes.</p>
+      <a href="#" class="catalog-cta">Explorar catálogo →</a>
+    </div>
+    <div class="catalog-book">
+      <div class="book-container">
+        <div class="book">
+          <div class="book-spine"></div>
+          <div class="book-cover"><div class="book-title">STACCATO</div><div class="book-deco"></div><div class="book-year">Catálogo 2025</div></div>
+          <div class="book-pages"></div>
+        </div>
+      </div>
+      <div class="book-nav">
+        <button class="book-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button class="book-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="social">
+    <div class="social-header reveal">
+      <div><p class="section-label" style="margin-bottom:12px;">04 — Mídias Sociais</p><h2 class="section-title">@staccato</h2></div>
+      <a href="#" class="social-handle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>Ver Instagram</a>
+    </div>
+    <div class="social-grid reveal">
+      <div class="social-item"><div class="social-bg s1"></div><div class="social-overlay"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg></div></div></div>
+      <div class="social-item"><div class="social-bg s2"></div><div class="social-overlay"><div class="social-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg></div></div></div>
+      <div class="social-item"><div class="social-bg s3"></div><div class="social-overlay"><div class="social-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg></div></div></div>
+      <div class="social-item"><div class="social-bg s4"></div><div class="social-overlay"><div class="social-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg></div></div></div>
+      <div class="social-item"><div class="social-bg s5"></div><div class="social-overlay"><div class="social-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg></div></div></div>
+      <div class="social-item"><div class="social-bg s6"></div><div class="social-overlay"><div class="social-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg></div></div></div>
+      <div class="social-item"><div class="social-bg s7"></div><div class="social-overlay"><div class="social-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg></div></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div><div class="footer-logo">Staccato</div><p class="footer-tagline">Mobiliário de design autoral brasileiro. Peças que atravessam o tempo, ambientes que contam histórias.</p></div>
+      <div class="footer-col"><h4>Navegação</h4><ul><li><a href="#" onclick="showPage('produtos');return false;">Produtos</a></li><li><a href="#" onclick="showPage('colecao');return false;">Coleção</a></li><li><a href="#" onclick="showPage('sobre');return false;">Sobre</a></li><li><a href="#" onclick="showPage('materiais');return false;">Materiais</a></li></ul></div>
+      <div class="footer-col"><h4>Institucional</h4><ul><li><a href="#" onclick="showPage('sobre');return false;">Apresentação</a></li><li><a href="#" onclick="showPage('sobre');return false;">Nossa Fábrica</a></li><li><a href="#" onclick="showPage('sobre');return false;">Designers Parceiros</a></li><li><a href="#">Recursos Arq & Design</a></li></ul></div>
+      <div class="footer-col"><h4>Contato</h4><div class="footer-contact-item"><span class="contact-label">E-mail Comercial</span><a href="mailto:comercial@staccato.com.br" class="contact-value">comercial@staccato.com.br</a></div><div class="footer-contact-item"><span class="contact-label">Arquitetos & Designers</span><a href="mailto:projetos@staccato.com.br" class="contact-value">projetos@staccato.com.br</a></div></div>
+    </div>
+    <div class="footer-bottom"><p class="footer-copy">© 2025 Staccato Mobiliário. Todos os direitos reservados.</p><div class="footer-socials"><a href="#" class="footer-social-link">Instagram</a><a href="#" class="footer-social-link">Pinterest</a><a href="#" class="footer-social-link">LinkedIn</a></div></div>
+  </footer>
+</div>
+
+<!-- ========================= PRODUTOS PAGE ========================= -->
+<div id="page-produtos" class="page">
+  <div class="page-hero">
+    <div class="page-hero-bg produtos-hero-bg"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <p class="page-breadcrumb">Staccato / Produtos</p>
+      <h1 class="page-hero-title">Produtos</h1>
+    </div>
+  </div>
+
+  <div class="produtos-filters">
+    <div class="filter-group">
+      <span class="filter-label">Linha</span>
+      <button class="filter-btn active" onclick="setFilter(this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter(this)">Interior</button>
+      <button class="filter-btn" onclick="setFilter(this)">Ar Livre</button>
+      <button class="filter-btn" onclick="setFilter(this)">Varanda</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">Categoria</span>
+      <button class="filter-btn" onclick="setFilter(this)">Sofás</button>
+      <button class="filter-btn" onclick="setFilter(this)">Poltronas</button>
+      <button class="filter-btn" onclick="setFilter(this)">Mesas</button>
+      <button class="filter-btn" onclick="setFilter(this)">Cadeiras</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">Ambiente</span>
+      <button class="filter-btn" onclick="setFilter(this)">Vivendo</button>
+      <button class="filter-btn" onclick="setFilter(this)">Jantar</button>
+      <button class="filter-btn" onclick="setFilter(this)">Externo</button>
+    </div>
+  </div>
+
+  <div class="produtos-grid">
+    <!-- Sofa row (1 per line: env + white) -->
+    <div class="products-row-sofa">
+      <div class="product-sofa-card" onclick="showPage('produto')">
+        <div class="product-sofa-env">
+          <div class="product-bg env-sala"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);display:flex;align-items:flex-end;padding:24px;">
+            <div><p style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:300;">Serra</p><p style="font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.5);text-transform:uppercase;margin-top:4px;">Sofá Modular · Interior</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="product-sofa-card" onclick="showPage('produto')">
+        <div class="product-sofa-white">
+          <div class="sofa-illustration">
+            <div class="sofa-3d"><div style="position:absolute;top:8px;left:5%;right:5%;height:35px;display:flex;gap:6px;"><span style="flex:1;background:linear-gradient(135deg,#b8a888,#9a8868);border-radius:4px;"></span><span style="flex:1;background:linear-gradient(135deg,#b8a888,#9a8868);border-radius:4px;"></span><span style="flex:1;background:linear-gradient(135deg,#b8a888,#9a8868);border-radius:4px;"></span></div></div>
+          </div>
+          <div style="position:absolute;bottom:16px;left:0;right:0;text-align:center;"><p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--charcoal);">Serra — Vista técnica</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 per line products -->
+    <div class="products-row-3">
+      <div class="product-card-3" onclick="showPage('produto')">
+        <div class="product-bg env-natural"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);"></div>
+        <div class="product-info-bar"><p class="product-card-name">Brisa</p><p class="product-card-cat">Poltrona · Interior</p></div>
+      </div>
+      <div class="product-card-3" onclick="showPage('produto')">
+        <div class="product-bg env-dark"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);"></div>
+        <div class="product-info-bar"><p class="product-card-name">Quadro</p><p class="product-card-cat">Mesa Centro · Interior</p></div>
+      </div>
+      <div class="product-card-3" onclick="showPage('produto')">
+        <div class="product-bg env-externa"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);"></div>
+        <div class="product-info-bar"><p class="product-card-name">Atlante</p><p class="product-card-cat">Sofá · Ar Livre</p></div>
+      </div>
+    </div>
+    <div class="products-row-3">
+      <div class="product-card-3" onclick="showPage('produto')">
+        <div class="product-bg env-light"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);"></div>
+        <div class="product-info-bar"><p class="product-card-name">Cais</p><p class="product-card-cat">Chaise Longue · Interior</p></div>
+      </div>
+      <div class="product-card-3" onclick="showPage('produto')">
+        <div class="product-bg env-varanda"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);"></div>
+        <div class="product-info-bar"><p class="product-card-name">Duna</p><p class="product-card-cat">Cadeira · Varanda</p></div>
+      </div>
+      <div class="product-card-3" onclick="showPage('produto')">
+        <div class="product-bg env-sala"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);"></div>
+        <div class="product-info-bar"><p class="product-card-name">Pedra</p><p class="product-card-cat">Otomano · Interior</p></div>
+      </div>
+    </div>
+
+    <!-- Second sofa row -->
+    <div class="products-row-sofa" style="margin-top:3px;">
+      <div class="product-sofa-card" onclick="showPage('produto')">
+        <div class="product-sofa-env">
+          <div class="product-bg env-externa"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);display:flex;align-items:flex-end;padding:24px;">
+            <div><p style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:300;">Horizonte</p><p style="font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.5);text-transform:uppercase;margin-top:4px;">Sofá · Ar Livre</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="product-sofa-card" onclick="showPage('produto')">
+        <div class="product-sofa-white">
+          <div class="sofa-illustration">
+            <div class="sofa-3d" style="background:linear-gradient(to bottom,#7a9060,#5a7040);"><div style="position:absolute;top:8px;left:5%;right:5%;height:35px;display:flex;gap:6px;"><span style="flex:1;background:linear-gradient(135deg,#98b878,#789858);border-radius:4px;"></span><span style="flex:1;background:linear-gradient(135deg,#98b878,#789858);border-radius:4px;"></span></div></div>
+          </div>
+          <div style="position:absolute;bottom:16px;left:0;right:0;text-align:center;"><p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--charcoal);">Horizonte — Vista técnica</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div><div class="footer-logo">Staccato</div><p class="footer-tagline">Mobiliário de design autoral brasileiro.</p></div>
+      <div class="footer-col"><h4>Navegação</h4><ul><li><a href="#" onclick="showPage('home');return false;">Início</a></li><li><a href="#" onclick="showPage('colecao');return false;">Coleção</a></li><li><a href="#" onclick="showPage('sobre');return false;">Sobre</a></li><li><a href="#" onclick="showPage('materiais');return false;">Materiais</a></li></ul></div>
+      <div class="footer-col"><h4>Contato</h4><div class="footer-contact-item"><span class="contact-label">E-mail</span><a href="#" class="contact-value">comercial@staccato.com.br</a></div></div>
+      <div class="footer-col"><h4>Redes</h4><ul><li><a href="#">Instagram</a></li><li><a href="#">Pinterest</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p class="footer-copy">© 2025 Staccato Mobiliário.</p></div>
+  </footer>
+</div>
+
+<!-- ========================= PRODUTO INTERNO ========================= -->
+<div id="page-produto" class="page">
+  <div class="produto-banner">
+    <div class="produto-banner-bg env-sala" style="position:absolute;inset:0;background:linear-gradient(160deg,#2a1e14,#4a3828,#6a5840,#8a7058);"></div>
+    <div class="produto-banner-overlay"></div>
+    <div class="produto-banner-content">
+      <h1 class="produto-banner-name">Serra</h1>
+      <p class="produto-banner-year">2024</p>
+    </div>
+  </div>
+
+  <div class="produto-carousel">
+    <div class="carousel-track" id="carouselTrack">
+      <div class="carousel-slide"><div class="carousel-slide-bg" style="background:linear-gradient(160deg,#2a1e14,#4a3828,#6a5840);"></div></div>
+      <div class="carousel-slide"><div class="carousel-slide-bg" style="background:linear-gradient(160deg,#1e2a14,#384828,#507040);"></div></div>
+      <div class="carousel-slide"><div class="carousel-slide-bg" style="background:linear-gradient(160deg,#14181e,#222838,#303848);"></div></div>
+      <div class="carousel-slide"><div class="carousel-slide-bg" style="background:linear-gradient(160deg,#2a2218,#3a3020,#4a4030);"></div></div>
+    </div>
+    <div class="carousel-nav">
+      <div class="carousel-dot active"></div><div class="carousel-dot"></div><div class="carousel-dot"></div><div class="carousel-dot"></div>
+    </div>
+  </div>
+
+  <div class="produto-detail">
+    <div class="produto-detail-info">
+      <a href="#" class="btn-ghost" onclick="showPage('produtos');return false;" style="margin-bottom:32px;display:inline-flex;">← Voltar aos produtos</a>
+      <h1 class="produto-detail-title">Serra</h1>
+      <p class="produto-detail-year">Sofá Modular · 2024</p>
+      <p class="produto-detail-desc">O Serra nasce da observação das formas orgânicas da paisagem brasileira. Suas linhas suaves e volumes generosos convidam ao descanso sem abrir mão da elegância estrutural. Disponível em configurações modulares que se adaptam a diferentes plantas e necessidades.</p>
+      <div class="produto-specs">
+        <div class="spec-row"><span class="spec-key">Largura</span><span class="spec-val">De 180 a 420 cm</span></div>
+        <div class="spec-row"><span class="spec-key">Profundidade</span><span class="spec-val">95 cm</span></div>
+        <div class="spec-row"><span class="spec-key">Altura assento</span><span class="spec-val">42 cm</span></div>
+        <div class="spec-row"><span class="spec-key">Estrutura</span><span class="spec-val">Madeira maciça de tauarí</span></div>
+        <div class="spec-row"><span class="spec-key">Revestimento</span><span class="spec-val">Tecido ou couro natural</span></div>
+        <div class="spec-row"><span class="spec-key">Designer</span><span class="spec-val">Tati Staccato</span></div>
+      </div>
+      <div class="produto-download">
+        <div class="dl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div><p class="dl-text">Ficha técnica</p><p class="dl-label">PDF · Para arquitetos e designers</p></div>
+      </div>
+      <div class="produto-download" style="margin-top:8px;">
+        <div class="dl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div><p class="dl-text">Arquivo 3D (DWG/OBJ)</p><p class="dl-label">Para projetos de interiores</p></div>
+      </div>
+    </div>
+    <div class="produto-angles">
+      <div class="angle-img" style="background:linear-gradient(135deg,#e8e0d0,#d8d0c0);"><div style="width:70%;height:60px;background:linear-gradient(to bottom,#9a8565,#7a6545);border-radius:4px;"></div><span class="angle-label">Frente</span></div>
+      <div class="angle-img" style="background:linear-gradient(135deg,#e0dcd0,#d0c8b8);"><div style="width:50%;height:70px;background:linear-gradient(to bottom,#8a7555,#6a5535);border-radius:4px;"></div><span class="angle-label">Lateral</span></div>
+      <div class="angle-img" style="background:linear-gradient(135deg,#dcd8d0,#ccc8b8);"><div style="width:80%;height:50px;background:linear-gradient(to bottom,#a89870,#887858);border-radius:4px;"></div><span class="angle-label">Superior</span></div>
+      <div class="angle-img" style="background:linear-gradient(135deg,#d8d4cc,#c8c0b0);"><div style="width:65%;height:65px;background:linear-gradient(to bottom,#9a8060,#7a6040);border-radius:4px;"></div><span class="angle-label">Perspectiva</span></div>
+    </div>
+  </div>
+
+  <!-- Modular arrangements -->
+  <div class="arranjos-section">
+    <p class="section-label" style="margin-bottom:12px;">Arranjos modulares</p>
+    <h2 class="section-title">Configure seu<br>Serra</h2>
+    <div class="arranjos-grid">
+      <div class="arranjo-card">
+        <div class="arranjo-visual"><div class="arranjo-sofa" style="width:70%;"></div></div>
+        <p class="arranjo-name">2 Módulos</p><p class="arranjo-modules">180 × 95 cm</p>
+      </div>
+      <div class="arranjo-card">
+        <div class="arranjo-visual"><div class="arranjo-sofa" style="width:85%;"></div></div>
+        <p class="arranjo-name">3 Módulos</p><p class="arranjo-modules">270 × 95 cm</p>
+      </div>
+      <div class="arranjo-card">
+        <div class="arranjo-visual"><div style="display:flex;align-items:flex-end;gap:2px;width:90%;"><div class="arranjo-sofa" style="width:70%;"></div><div class="arranjo-sofa" style="width:30%;height:35px;"></div></div></div>
+        <p class="arranjo-name">L Pequeno</p><p class="arranjo-modules">270 × 180 cm</p>
+      </div>
+      <div class="arranjo-card">
+        <div class="arranjo-visual"><div style="display:flex;align-items:flex-end;gap:2px;width:95%;"><div class="arranjo-sofa" style="width:65%;"></div><div class="arranjo-sofa" style="width:35%;height:40px;"></div></div></div>
+        <p class="arranjo-name">L Grande</p><p class="arranjo-modules">330 × 220 cm</p>
+      </div>
+      <div class="arranjo-card">
+        <div class="arranjo-visual"><div class="arranjo-sofa" style="width:100%;"></div></div>
+        <p class="arranjo-name">4 Módulos</p><p class="arranjo-modules">360 × 95 cm</p>
+      </div>
+      <div class="arranjo-card">
+        <div class="arranjo-visual"><div style="display:flex;align-items:flex-end;gap:2px;width:100%;"><div class="arranjo-sofa" style="width:55%;"></div><div class="arranjo-sofa" style="width:25%;height:40px;"></div><div class="arranjo-sofa" style="width:20%;height:35px;"></div></div></div>
+        <p class="arranjo-name">U Completo</p><p class="arranjo-modules">420 × 240 cm</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="complementares">
+    <p class="section-label" style="margin-bottom:12px;">Complete o ambiente</p>
+    <h2 class="section-title">Produtos<br>complementares</h2>
+    <div class="comp-grid">
+      <div class="comp-card" onclick="showPage('produto')">
+        <div class="comp-card-bg env-dark"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);"></div>
+        <div class="comp-card-label"><p class="comp-card-name">Quadro</p><p class="comp-card-type">Mesa Centro</p></div>
+      </div>
+      <div class="comp-card" onclick="showPage('produto')">
+        <div class="comp-card-bg env-natural"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);"></div>
+        <div class="comp-card-label"><p class="comp-card-name">Brisa</p><p class="comp-card-type">Poltrona</p></div>
+      </div>
+      <div class="comp-card" onclick="showPage('produto')">
+        <div class="comp-card-bg env-light"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);"></div>
+        <div class="comp-card-label"><p class="comp-card-name">Pedra</p><p class="comp-card-type">Otomano</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="designer-section">
+    <div class="designer-photo"><div class="designer-photo-overlay"></div></div>
+    <div class="designer-info">
+      <p class="designer-label">Designer</p>
+      <h2 class="designer-name">Tati<br>Staccato</h2>
+      <p class="designer-bio">Com formação em design de produto e especialização em ergonomia, Tati fundou a Staccato com a missão de criar peças que equilibram forma, conforto e identidade brasileira. Cada projeto nasce da observação do cotidiano e do desejo de transformar o espaço doméstico em algo verdadeiramente singular.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div><div class="footer-logo">Staccato</div><p class="footer-tagline">Mobiliário de design autoral brasileiro.</p></div>
+      <div class="footer-col"><h4>Navegação</h4><ul><li><a href="#" onclick="showPage('produtos');return false;">Produtos</a></li><li><a href="#" onclick="showPage('colecao');return false;">Coleção</a></li></ul></div>
+      <div class="footer-col"><h4>Contato</h4><div class="footer-contact-item"><span class="contact-label">E-mail</span><a href="#" class="contact-value">comercial@staccato.com.br</a></div></div>
+      <div class="footer-col"><h4>Redes</h4><ul><li><a href="#">Instagram</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p class="footer-copy">© 2025 Staccato Mobiliário.</p></div>
+  </footer>
+</div>
+
+<!-- ========================= COLEÇÃO PAGE ========================= -->
+<div id="page-colecao" class="page">
+  <div class="page-hero">
+    <div class="page-hero-bg colecao-hero-bg"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <p class="page-breadcrumb">Staccato / Coleção</p>
+      <h1 class="page-hero-title">Coleção</h1>
+    </div>
+  </div>
+
+  <div class="colecao-intro">
+    <div>
+      <p class="section-label" style="margin-bottom:20px;">2025</p>
+      <h2 class="section-title" style="margin-bottom:32px;">Natureza<br>e silêncio</h2>
+      <div class="divider" style="margin-bottom:32px;"></div>
+      <p style="font-family:'Jost',sans-serif;font-size:14px;font-weight:300;line-height:1.9;color:var(--light-text);">A coleção 2025 da Staccato nasce de uma contemplação profunda da natureza brasileira — suas formas orgânicas, sua paleta terrosa e a sensação de quietude que só os grandes espaços naturais proporcionam. Cada peça é um diálogo entre o rigor construtivo e a leveza da matéria.</p>
+    </div>
+    <div style="aspect-ratio:3/4;background:linear-gradient(160deg,#1e2a14,#2a3820,#3a5030);position:relative;">
+      <div style="position:absolute;bottom:32px;left:32px;right:32px;">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;font-weight:300;font-style:italic;">"Silêncio<br>como forma"</p>
+        <p style="font-family:'Jost',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.4);margin-top:12px;text-transform:uppercase;">— Tati Staccato</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Collection items with hotspots -->
+  <div class="colecao-item">
+    <div class="colecao-item-bg" style="background:linear-gradient(160deg,#2a1e14,#4a3828,#6a5840,#3a2c1a);position:absolute;inset:0;"></div>
+    <div class="colecao-item-overlay"></div>
+    <div class="colecao-item-content">
+      <div class="colecao-item-num">01</div>
+      <h2 class="colecao-item-name">Serra</h2>
+      <p class="colecao-item-desc">O sofá que redefine o conceito de estar em casa. Modular, adaptável, atemporal.</p>
+      <a href="#" class="colecao-cta" onclick="showPage('produto');return false;">Ver produto →</a>
+    </div>
+    <!-- Hotspots -->
+    <div class="hotspot colecao-hotspots" style="left:32%;bottom:35%;position:absolute;">
+      <div class="hotspot-dot"></div>
+      <div class="hotspot-popup"><div class="popup-img"></div><p class="popup-name">Serra</p><p class="popup-year">2024</p><p class="popup-desc">Sofá modular</p><a href="#" class="popup-link" onclick="showPage('produto');return false;">Ver produto</a></div>
+    </div>
+  </div>
+
+  <div class="colecao-item" style="flex-direction:row-reverse;">
+    <div class="colecao-item-bg" style="background:linear-gradient(160deg,#1a2a1a,#2a4030,#3a5840);position:absolute;inset:0;"></div>
+    <div class="colecao-item-overlay" style="background:linear-gradient(to right,rgba(10,8,5,.7),rgba(10,8,5,.1));"></div>
+    <div class="colecao-item-content" style="text-align:left;">
+      <div class="colecao-item-num">02</div>
+      <h2 class="colecao-item-name">Horizonte</h2>
+      <p class="colecao-item-desc">Para os espaços que respiram o ar livre. Resistência e beleza em harmonia perfeita.</p>
+      <a href="#" class="colecao-cta" onclick="showPage('produto');return false;">Ver produto →</a>
+    </div>
+  </div>
+
+  <div class="colecao-item">
+    <div class="colecao-item-bg" style="background:linear-gradient(160deg,#15181e,#202838,#2a3848);position:absolute;inset:0;"></div>
+    <div class="colecao-item-overlay"></div>
+    <div class="colecao-item-content">
+      <div class="colecao-item-num">03</div>
+      <h2 class="colecao-item-name">Brisa</h2>
+      <p class="colecao-item-desc">A poltrona que convida à pausa. Um volume que abraça sem aprisionar.</p>
+      <a href="#" class="colecao-cta" onclick="showPage('produto');return false;">Ver produto →</a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div><div class="footer-logo">Staccato</div><p class="footer-tagline">Mobiliário de design autoral brasileiro.</p></div>
+      <div class="footer-col"><h4>Navegação</h4><ul><li><a href="#" onclick="showPage('home');return false;">Início</a></li><li><a href="#" onclick="showPage('produtos');return false;">Produtos</a></li><li><a href="#" onclick="showPage('sobre');return false;">Sobre</a></li></ul></div>
+      <div class="footer-col"><h4>Contato</h4><div class="footer-contact-item"><span class="contact-label">E-mail</span><a href="#" class="contact-value">comercial@staccato.com.br</a></div></div>
+      <div class="footer-col"><h4>Redes</h4><ul><li><a href="#">Instagram</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p class="footer-copy">© 2025 Staccato Mobiliário.</p></div>
+  </footer>
+</div>
+
+<!-- ========================= SOBRE PAGE ========================= -->
+<div id="page-sobre" class="page">
+  <div class="page-hero">
+    <div class="page-hero-bg sobre-hero-bg"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <p class="page-breadcrumb">Staccato / Sobre</p>
+      <h1 class="page-hero-title">Sobre nós</h1>
+    </div>
+  </div>
+
+  <div class="sobre-intro">
+    <div class="sobre-text-block">
+      <p class="section-label" style="margin-bottom:20px;">Nossa história</p>
+      <blockquote class="sobre-big-quote">"Cada peça que criamos carrega a intenção de durar mais do que uma geração."</blockquote>
+      <p class="sobre-body">A Staccato nasceu do desejo de criar mobiliário que fosse, ao mesmo tempo, rigorosamente construído e profundamente humano. Fundada em [cidade], a marca reúne um time de designers, artesãos e engenheiros comprometidos com a excelência em cada detalhe.<br><br>Nossa produção é inteiramente nacional, utilizando madeiras de manejo sustentável, tecidos e cordas de alta performance e metais trabalhados por ferreiros especializados. Cada peça passa por um processo rigoroso de controle de qualidade antes de chegar ao cliente.</p>
+    </div>
+    <div class="sobre-visual">
+      <div class="sobre-img-main"></div>
+      <div class="sobre-img-float"></div>
+    </div>
+  </div>
+
+  <div class="sobre-stats">
+    <div class="stat-block"><p class="stat-num">12<span class="stat-unit">+</span></p><p class="stat-label">Anos de mercado</p></div>
+    <div class="stat-block"><p class="stat-num">240<span class="stat-unit">+</span></p><p class="stat-label">Produtos criados</p></div>
+    <div class="stat-block"><p class="stat-num">38<span class="stat-unit"></span></p><p class="stat-label">Artesãos na fábrica</p></div>
+    <div class="stat-block"><p class="stat-num">5<span class="stat-unit">★</span></p><p class="stat-label">Prêmios de design</p></div>
+  </div>
+
+  <div class="fabrica-section">
+    <p class="section-label" style="margin-bottom:12px;">Processo</p>
+    <h2 class="section-title">Nossa fábrica</h2>
+    <div class="fabrica-grid">
+      <div class="fabrica-text">
+        <h3>Onde tudo nasce</h3>
+        <p>Localizada no coração do polo moveleiro brasileiro, nossa fábrica de 4.000 m² abriga ateliês de carpintaria, estofamento, acabamento e controle de qualidade. Cada etapa do processo é conduzida por artesãos especializados, com décadas de experiência em suas áreas.<br><br>A integração entre tecnologia e trabalho manual é o que nos permite criar peças com acabamento impecável e processos produtivos responsáveis. Utilizamos sistemas de corte a laser para precisão milimétrica e técnicas ancestrais de costura para revestimentos que duram décadas.</p>
+      </div>
+      <div class="fabrica-img"></div>
+    </div>
+  </div>
+
+  <div class="designers-section">
+    <p class="section-label" style="margin-bottom:12px;">Time criativo</p>
+    <h2 class="section-title">Designers<br>parceiros</h2>
+    <div class="designers-grid">
+      <div class="designer-card">
+        <div class="designer-card-img" style="background:linear-gradient(160deg,#3a2e22,#2a1e14);"></div>
+        <div class="designer-card-body"><p class="designer-card-name">Tati Staccato</p><p class="designer-card-role">Fundadora & Diretora Criativa</p></div>
+      </div>
+      <div class="designer-card">
+        <div class="designer-card-img" style="background:linear-gradient(160deg,#1e2a1e,#142014);"></div>
+        <div class="designer-card-body"><p class="designer-card-name">Rafael Melo</p><p class="designer-card-role">Designer de Produto</p></div>
+      </div>
+      <div class="designer-card">
+        <div class="designer-card-img" style="background:linear-gradient(160deg,#1e1e2a,#141420);"></div>
+        <div class="designer-card-body"><p class="designer-card-name">Ana Ferreira</p><p class="designer-card-role">Designer de Interiores Parceira</p></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div><div class="footer-logo">Staccato</div><p class="footer-tagline">Mobiliário de design autoral brasileiro.</p></div>
+      <div class="footer-col"><h4>Navegação</h4><ul><li><a href="#" onclick="showPage('home');return false;">Início</a></li><li><a href="#" onclick="showPage('produtos');return false;">Produtos</a></li><li><a href="#" onclick="showPage('materiais');return false;">Materiais</a></li></ul></div>
+      <div class="footer-col"><h4>Contato</h4><div class="footer-contact-item"><span class="contact-label">E-mail</span><a href="#" class="contact-value">comercial@staccato.com.br</a></div></div>
+      <div class="footer-col"><h4>Redes</h4><ul><li><a href="#">Instagram</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p class="footer-copy">© 2025 Staccato Mobiliário.</p></div>
+  </footer>
+</div>
+
+<!-- ========================= MATERIAIS PAGE ========================= -->
+<div id="page-materiais" class="page">
+  <div class="page-hero">
+    <div class="page-hero-bg materiais-hero-bg"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <p class="page-breadcrumb">Staccato / Materiais</p>
+      <h1 class="page-hero-title">Materiais</h1>
+    </div>
+  </div>
+
+  <div class="materiais-tabs">
+    <button class="mat-tab active" onclick="setMatTab(this,'interior')">Interior</button>
+    <button class="mat-tab" onclick="setMatTab(this,'arlivre')">Ar Livre</button>
+    <button class="mat-tab" onclick="setMatTab(this,'varanda')">Varanda</button>
+    <button class="mat-tab" onclick="setMatTab(this,'cuidados')">Cuidados</button>
+  </div>
+
+  <div id="mat-interior" class="materiais-section">
+    <div class="mat-category">
+      <div class="mat-category-header"><p class="section-label">01</p><h2 class="mat-category-title">Tecidos</h2></div>
+      <div class="mat-grid">
+        <div class="mat-card"><div class="mat-swatch sw-areia" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">TEC-001</p><p class="mat-card-name">Areia Natural</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-pedra" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">TEC-002</p><p class="mat-card-name">Pedra</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-grafite" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">TEC-003</p><p class="mat-card-name">Grafite</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-marfim" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">TEC-004</p><p class="mat-card-name">Marfim</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-caramelo" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">TEC-005</p><p class="mat-card-name">Caramelo</p></div></div>
+      </div>
+    </div>
+    <div class="mat-category">
+      <div class="mat-category-header"><p class="section-label">02</p><h2 class="mat-category-title">Madeiras</h2></div>
+      <div class="mat-grid">
+        <div class="mat-card"><div class="mat-swatch sw-natural" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">MAD-001</p><p class="mat-card-name">Tauarí Natural</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-teca" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">MAD-002</p><p class="mat-card-name">Teca</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-freijo" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">MAD-003</p><p class="mat-card-name">Freijó</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-cedro" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">MAD-004</p><p class="mat-card-name">Cedro</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-eucalipto" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">MAD-005</p><p class="mat-card-name">Eucalipto</p></div></div>
+      </div>
+    </div>
+    <div class="mat-category">
+      <div class="mat-category-header"><p class="section-label">03</p><h2 class="mat-category-title">Pintura Eletrostática</h2></div>
+      <div class="mat-grid">
+        <div class="mat-card"><div class="mat-swatch sw-branco" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">PIN-001</p><p class="mat-card-name">Branco Neve</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-preto" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">PIN-002</p><p class="mat-card-name">Preto Fosco</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-bronze" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">PIN-003</p><p class="mat-card-name">Bronze</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-cobre" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">PIN-004</p><p class="mat-card-name">Cobre</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-titanio" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">PIN-005</p><p class="mat-card-name">Titânio Fosco</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mat-arlivre" class="materiais-section" style="display:none;">
+    <div class="mat-category">
+      <div class="mat-category-header"><p class="section-label">01</p><h2 class="mat-category-title">Cordas & Telas</h2></div>
+      <div class="mat-grid">
+        <div class="mat-card"><div class="mat-swatch sw-areia" style="height:120px;background:repeating-linear-gradient(45deg,#c8b890,#c8b890 4px,#d8c8a0 4px,#d8c8a0 8px);"></div><div class="mat-card-info"><p class="mat-card-code">COR-001</p><p class="mat-card-name">Corda Natural</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-grafite" style="height:120px;background:repeating-linear-gradient(45deg,#3A3830,#3A3830 4px,#484840 4px,#484840 8px);"></div><div class="mat-card-info"><p class="mat-card-code">COR-002</p><p class="mat-card-name">Corda Grafite</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-verde" style="height:120px;background:repeating-linear-gradient(45deg,#4A6040,#4A6040 4px,#5A7050 4px,#5A7050 8px);"></div><div class="mat-card-info"><p class="mat-card-code">COR-003</p><p class="mat-card-name">Corda Musgo</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-azul" style="height:120px;background:repeating-linear-gradient(0deg,#3A5070,#3A5070 4px,#4A6080 4px,#4A6080 8px);"></div><div class="mat-card-info"><p class="mat-card-code">TEL-001</p><p class="mat-card-name">Tela Azul</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-bege" style="height:120px;background:repeating-linear-gradient(0deg,#D0C0A0,#D0C0A0 4px,#E0D0B0 4px,#E0D0B0 8px);"></div><div class="mat-card-info"><p class="mat-card-code">TEL-002</p><p class="mat-card-name">Tela Bege</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mat-varanda" class="materiais-section" style="display:none;">
+    <div class="mat-category">
+      <div class="mat-category-header"><p class="section-label">01</p><h2 class="mat-category-title">Tecidos de Alto Desempenho</h2></div>
+      <div class="mat-grid">
+        <div class="mat-card"><div class="mat-swatch sw-areia" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">VAR-001</p><p class="mat-card-name">Sunbrella Areia</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-azul" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">VAR-002</p><p class="mat-card-name">Sunbrella Azul</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-terracota" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">VAR-003</p><p class="mat-card-name">Sunbrella Terracota</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-musgo" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">VAR-004</p><p class="mat-card-name">Sunbrella Musgo</p></div></div>
+        <div class="mat-card"><div class="mat-swatch sw-grafite" style="height:120px;"></div><div class="mat-card-info"><p class="mat-card-code">VAR-005</p><p class="mat-card-name">Sunbrella Grafite</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mat-cuidados" class="materiais-section" style="display:none;">
+    <div class="cuidados-grid" style="margin-top:0;">
+      <div class="cuidado-card">
+        <div class="cuidado-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+        <h3 class="cuidado-title">Tecidos</h3>
+        <p class="cuidado-text">Limpe manchas imediatamente com pano úmido e neutro. Evite exposição direta ao sol por longos períodos. Para limpeza profunda, utilize apenas produtos específicos para o tipo de tecido indicado na etiqueta.</p>
+      </div>
+      <div class="cuidado-card">
+        <div class="cuidado-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <h3 class="cuidado-title">Madeiras</h3>
+        <p class="cuidado-text">Aplique óleo de teca a cada 6 meses para manutenção da tonalidade. Evite contato com água em excesso. Pequenos riscos podem ser tratados com lixa fina e reaplicação de óleo na área afetada.</p>
+      </div>
+      <div class="cuidado-card">
+        <div class="cuidado-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <h3 class="cuidado-title">Cordas & Telas</h3>
+        <p class="cuidado-text">Lave com água e sabão neutro. As cordas sintéticas da Staccato são tratadas contra UV e fungos, mas a limpeza regular prolonga significativamente sua vida útil. Seque à sombra.</p>
+      </div>
+      <div class="cuidado-card">
+        <div class="cuidado-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3 class="cuidado-title">Pintura Metálica</h3>
+        <p class="cuidado-text">Limpe com pano seco ou levemente úmido. Evite produtos abrasivos. Em ambientes litorâneos, a limpeza quinzenal evita acúmulo de sal que pode comprometer o acabamento ao longo do tempo.</p>
+      </div>
+      <div class="cuidado-card">
+        <div class="cuidado-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+        <h3 class="cuidado-title">Couro</h3>
+        <p class="cuidado-text">Hidrate com creme específico para couro a cada 3 meses. Evite umidade excessiva e calor direto. Manchas devem ser tratadas com pano levemente úmido e sem esfregamento vigoroso.</p>
+      </div>
+      <div class="cuidado-card">
+        <div class="cuidado-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <h3 class="cuidado-title">Manual de Garantia</h3>
+        <p class="cuidado-text">Todos os produtos Staccato possuem 5 anos de garantia contra defeitos de fabricação. O manual completo acompanha cada peça e está disponível para download na área de arquitetos e designers.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="garantia-banner">
+    <div class="garantia-text">
+      <h3 class="garantia-title">5 anos de garantia</h3>
+      <p class="garantia-sub">Em todos os produtos Staccato contra defeitos de fabricação</p>
+    </div>
+    <button class="garantia-btn">Baixar manual completo</button>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div><div class="footer-logo">Staccato</div><p class="footer-tagline">Mobiliário de design autoral brasileiro.</p></div>
+      <div class="footer-col"><h4>Navegação</h4><ul><li><a href="#" onclick="showPage('home');return false;">Início</a></li><li><a href="#" onclick="showPage('produtos');return false;">Produtos</a></li><li><a href="#" onclick="showPage('sobre');return false;">Sobre</a></li></ul></div>
+      <div class="footer-col"><h4>Contato</h4><div class="footer-contact-item"><span class="contact-label">E-mail</span><a href="#" class="contact-value">comercial@staccato.com.br</a></div></div>
+      <div class="footer-col"><h4>Redes</h4><ul><li><a href="#">Instagram</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p class="footer-copy">© 2025 Staccato Mobiliário.</p></div>
+  </footer>
+</div>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+(function animateCursor(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animateCursor);})();
+document.querySelectorAll('a,button,.cat-card,.social-item,.hotspot,.product-card-3,.product-sofa-card,.comp-card,.mat-card,.arranjo-card,.designer-card,.colecao-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.transform='translate(-50%,-50%) scale(2)';ring.style.transform='translate(-50%,-50%) scale(1.5)';ring.style.opacity='.3';});
+  el.addEventListener('mouseleave',()=>{cursor.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';ring.style.opacity='.5';});
+});
+
+// LOADER
+setTimeout(()=>document.getElementById('loader').classList.add('hidden'),2800);
+
+// PAGE NAVIGATION
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  window.scrollTo(0,0);
+  // Update menu state
+  const menu = document.getElementById('top-menu');
+  const isDark = ['home'].includes(name);
+  if(isDark){ menu.classList.remove('scrolled','solid'); } else { menu.classList.add('solid'); menu.classList.remove('scrolled'); }
+  document.getElementById('side-menu').classList.toggle('dark', !isDark);
+  // Update nav highlights
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('current-page'));
+  const navMap={produtos:'nav-produtos',colecao:'nav-colecao',sobre:'nav-sobre',materiais:'nav-materiais',produto:'nav-produtos'};
+  if(navMap[name]) document.getElementById(navMap[name]).classList.add('current-page');
+  // Re-run reveals
+  setTimeout(()=>{ document.querySelectorAll('.reveal').forEach(el=>{ if(isInViewport(el)) el.classList.add('visible'); }); },100);
+}
+
+function isInViewport(el){ const r=el.getBoundingClientRect(); return r.top<window.innerHeight&&r.bottom>0; }
+
+// SCROLL EFFECTS
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  const menu=document.getElementById('top-menu');
+  const activePage=document.querySelector('.page.active');
+  const isHome=activePage&&activePage.id==='page-home';
+  if(isHome){
+    if(y>80){menu.classList.add('scrolled');document.getElementById('side-menu').classList.add('dark');}
+    else{menu.classList.remove('scrolled');document.getElementById('side-menu').classList.remove('dark');}
+  }
+  document.querySelectorAll('.reveal').forEach(el=>{ if(isInViewport(el)) el.classList.add('visible'); });
+});
+
+// MEGA MENU
+let megaTimer;
+function openMega(){clearTimeout(megaTimer);document.getElementById('megaMenu').classList.add('open');}
+function closeMegaDelay(){megaTimer=setTimeout(()=>document.getElementById('megaMenu').classList.remove('open'),200);}
+
+// SEARCH
+function toggleSearch(){document.getElementById('search-overlay').classList.toggle('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('search-overlay').classList.remove('open');});
+
+// LANG
+function setLang(btn){document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+// FILTERS
+function setFilter(btn){
+  const group=btn.closest('.filter-group');
+  group.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// MATERIALS TABS
+function setMatTab(btn,section){
+  document.querySelectorAll('.mat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['interior','arlivre','varanda','cuidados'].forEach(s=>{
+    const el=document.getElementById('mat-'+s);
+    if(el) el.style.display=s===section?'block':'none';
+  });
+}
+
+// CAROUSEL
+let currentSlide=0;
+document.querySelectorAll('.carousel-dot').forEach((dot,i)=>{
+  dot.addEventListener('click',()=>{
+    currentSlide=i;
+    const track=document.getElementById('carouselTrack');
+    if(track){ const slideW=track.querySelector('.carousel-slide').offsetWidth+3; track.scrollTo({left:slideW*i,behavior:'smooth'}); }
+    document.querySelectorAll('.carousel-dot').forEach((d,j)=>d.classList.toggle('active',i===j));
+  });
+});
+
+// Initial reveal
+setTimeout(()=>{ document.querySelectorAll('.reveal').forEach(el=>{ if(isInViewport(el)) el.classList.add('visible'); }); },3000);
+</script>
 </body>
 </html>
